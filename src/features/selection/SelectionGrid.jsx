@@ -1,5 +1,5 @@
-import React from 'react';
-import { CheckCircle2, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { CheckCircle2, Lock, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 
 /**
  * SelectionGrid - uses Supabase profile objects directly.
@@ -9,7 +9,9 @@ import { CheckCircle2, Lock } from 'lucide-react';
  * specialties = array of {id, name, total_seats}
  * onSelect(deptId | null) = called when user picks or releases a seat
  */
-const SelectionGrid = ({ user, specialties, selections, onSelect }) => {
+const SelectionGrid = ({ user, specialties, selections, candidates = [], onSelect }) => {
+  const [showPending, setShowPending] = useState(true);
+  const pending = candidates.filter(c => !c.choice_id).sort((a, b) => a.rank - b.rank);
 
   const getDeptStatus = (dept) => {
     // All profiles that chose this department
@@ -104,6 +106,34 @@ const SelectionGrid = ({ user, specialties, selections, onSelect }) => {
         })}
       </div>
 
+      {/* --- Pending Candidates Panel --- */}
+      <div className="pending-section">
+        <button className="pending-header" onClick={() => setShowPending(v => !v)}>
+          <div className="pending-title">
+            <Clock size={18} className="text-teal" />
+            <span>Waiting to Choose</span>
+            <span className="pending-count">{pending.length}</span>
+          </div>
+          {showPending ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </button>
+
+        {showPending && (
+          <div className="pending-grid animate-fade-in">
+            {pending.length === 0 ? (
+              <p className="all-chosen">🎉 All candidates have chosen!</p>
+            ) : (
+              pending.map(c => (
+                <div key={c.id} className={`pending-card ${c.id === user.id ? 'me' : ''}`}>
+                  <span className="rank-badge">#{c.rank}</span>
+                  <span className="pending-name">{c.full_name}</span>
+                  {c.id === user.id && <span className="you-tag">You</span>}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
       <style>{`
         .selection-grid-container { display: flex; flex-direction: column; gap: 2rem; }
         .user-context {
@@ -180,6 +210,19 @@ const SelectionGrid = ({ user, specialties, selections, onSelect }) => {
         .btn-release { background: var(--accent-red); color: white; }
         .text-teal { color: var(--teal-primary); }
         .text-red { color: var(--accent-red); }
+        
+        .pending-section { background: white; border-radius: 20px; border: 1px solid var(--sterile-gray); overflow: hidden; }
+        .pending-header { display: flex; justify-content: space-between; align-items: center; padding: 1.1rem 1.5rem; background: none; border: none; cursor: pointer; width: 100%; transition: background 0.2s; }
+        .pending-header:hover { background: var(--medical-bg); }
+        .pending-title { display: flex; align-items: center; gap: 0.75rem; font-weight: 800; font-size: 1rem; }
+        .pending-count { background: rgba(13,148,136,0.1); color: var(--teal-dark); padding: 0.2rem 0.6rem; border-radius: 100px; font-size: 0.8rem; font-weight: 800; }
+        .pending-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; padding: 0 1.5rem 1.5rem; }
+        .pending-card { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.9rem; background: var(--medical-bg); border-radius: 100px; border: 1.5px solid var(--sterile-gray); }
+        .pending-card.me { background: rgba(239,68,68,0.06); border-color: rgba(239,68,68,0.3); }
+        .pending-card .rank-badge { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
+        .pending-card .pending-name { font-size: 0.85rem; font-weight: 700; color: var(--text-main); }
+        .pending-card .you-tag { background: #ef4444; color: white; font-size: 0.7rem; font-weight: 800; padding: 0.15rem 0.5rem; border-radius: 100px; }
+        .all-chosen { font-size: 0.9rem; font-weight: 700; color: #16a34a; padding: 0.5rem; }
       `}</style>
     </div>
   );

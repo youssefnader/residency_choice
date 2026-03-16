@@ -244,7 +244,7 @@ function App() {
                 <h2>Live Specialty Selection — {activeRoom.name}</h2>
                 <p>Selections update in real-time for all doctors.</p>
               </div>
-              <SelectionGrid user={currentUser} specialties={specialties} selections={selections} onSelect={handleSelectSeat} />
+              <SelectionGrid user={currentUser} specialties={specialties} selections={selections} candidates={candidates} onSelect={handleSelectSeat} />
             </div>
           )
         )}
