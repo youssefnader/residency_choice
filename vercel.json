@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npx vite build",
+  "devCommand": "npx vite",
+  "installCommand": "npm install"
+}
